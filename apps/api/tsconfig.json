@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "moduleResolution": "node16",
+    "module": "Node16",
+    "target": "ES2022"
+  },
+  "references": [
+    { "path": "../../packages/shared-types" }
+  ],
+  "include": ["src/**/*"]
+}

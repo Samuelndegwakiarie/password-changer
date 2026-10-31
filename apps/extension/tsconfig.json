@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "types": ["chrome", "vite/client"]
+  },
+  "references": [
+    { "path": "../../packages/shared-types" },
+    { "path": "../../packages/password-core" },
+    { "path": "../../packages/adapter-contracts" }
+  ],
+  "include": ["src/**/*"]
+}
