@@ -9,6 +9,7 @@ import type {
   MessageResponse,
 } from '@recoverly/shared-types';
 import { storage, INITIAL_STATE } from '../storage/chrome-storage';
+import { transitionRecovery } from '../domain/state-machine';
 
 export function useRecoverlyState() {
   const [state, setState] = useState<RecoverlyStorageState>(INITIAL_STATE);
@@ -80,6 +81,30 @@ export function useRecoverlyState() {
         await storage.setState(current);
         return { cancelled: true } as unknown as T;
       }
+      case 'TRANSITION_RECOVERY': {
+        const rec = current.recoveries[payload.recoveryId];
+        if (!rec) throw new Error('Recovery record not found');
+        const updated = transitionRecovery(rec, payload.nextStatus, payload.metadata as any);
+        current.recoveries[updated.id] = updated;
+        if (['completed', 'cancelled', 'failed'].includes(updated.status)) {
+          current.activeRecoveryId = undefined;
+        }
+        await storage.setState(current);
+        return updated as unknown as T;
+      }
+      case 'CONFIRM_STORAGE': {
+        const rec = current.recoveries[payload.recoveryId];
+        if (!rec) throw new Error('Recovery record not found');
+        const updated = transitionRecovery(rec, 'completed', {
+          storageEvidence: payload.confirmed ? 'user_confirmed' : 'not_confirmed',
+        });
+        current.recoveries[updated.id] = updated;
+        current.activeRecoveryId = undefined;
+        await storage.setState(current);
+        return updated as unknown as T;
+      }
+      case 'EXPORT_DATA':
+        return (await storage.exportData()) as unknown as T;
       case 'PURGE_ALL_DATA':
         await storage.purgeAll();
         return { purged: true } as unknown as T;

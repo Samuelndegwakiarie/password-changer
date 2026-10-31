@@ -109,7 +109,7 @@ async function handleMessage(message: MessagePayload): Promise<unknown> {
         updatedAt: now,
       };
 
-      await storage.saveRecovery(newRecovery);
+      state.recoveries[newRecovery.id] = newRecovery;
       state.activeRecoveryId = newRecovery.id;
       await storage.setState(state);
 
@@ -137,7 +137,7 @@ async function handleMessage(message: MessagePayload): Promise<unknown> {
       if (!recovery) throw new Error('Recovery record not found');
 
       const nextRec = transitionRecovery(recovery, message.nextStatus, message.metadata as any);
-      await storage.saveRecovery(nextRec);
+      state.recoveries[nextRec.id] = nextRec;
 
       const account = state.accounts[nextRec.accountId];
       if (account) {
@@ -156,8 +156,8 @@ async function handleMessage(message: MessagePayload): Promise<unknown> {
       if (['completed', 'cancelled', 'failed'].includes(nextRec.status)) {
         ephemeralSecretHolder.clear();
         state.activeRecoveryId = undefined;
-        await storage.setState(state);
       }
+      await storage.setState(state);
 
       return nextRec;
     }
@@ -168,7 +168,7 @@ async function handleMessage(message: MessagePayload): Promise<unknown> {
       const recovery = state.recoveries[message.recoveryId];
       if (recovery) {
         const nextRec = transitionRecovery(recovery, 'cancelled');
-        await storage.saveRecovery(nextRec);
+        state.recoveries[nextRec.id] = nextRec;
       }
       state.activeRecoveryId = undefined;
       await storage.setState(state);
@@ -197,7 +197,7 @@ async function handleMessage(message: MessagePayload): Promise<unknown> {
       const nextRec = transitionRecovery(recovery, 'completed', {
         storageEvidence: message.confirmed ? 'user_confirmed' : 'not_confirmed',
       });
-      await storage.saveRecovery(nextRec);
+      state.recoveries[nextRec.id] = nextRec;
       ephemeralSecretHolder.clear();
       state.activeRecoveryId = undefined;
       await storage.setState(state);
