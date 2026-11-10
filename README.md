@@ -2,7 +2,7 @@
 
 Recoverly is a local-first, privacy-respecting Chrome desktop extension (Manifest V3) that guides users through safe, step-by-step password recovery and remediation for vulnerable or compromised accounts.
 
----
+
 
 ## Non-Negotiable Platform & Security Guarantees
 
